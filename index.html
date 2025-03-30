@@ -11,11 +11,11 @@
             color: white;
         }
         h1 {
-            font-size: 36px;
+            font-size: 30px;
             margin-top: 20px;
         }
         p {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
         }
         canvas {
@@ -26,16 +26,16 @@
             display: none;
         }
         .instructions {
-            font-size: 20px;
+            font-size: 18px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             display: inline-block;
         }
         button {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 10px 20px;
-            font-size: 20px;
+            font-size: 18px;
             background: orange;
             border: none;
             color: white;
@@ -48,34 +48,36 @@
     <h1>🏀 Basket Minigame 🏀</h1>
     <div class="instructions" id="instructions">
         <p>📜 Instrucciones:</p>
-        <p>PC: Presiona <strong>ESPACIO</strong> para lanzar la pelota.</p>
-        <p>Celular: Toca la pantalla para lanzar la pelota.</p>
+        <p>PC: Usa el <strong>mouse</strong> para apuntar y haz clic para lanzar.</p>
+        <p>Celular: Toca y desliza para apuntar, suelta para lanzar.</p>
         <p>🎯 Intenta encestar y la dificultad aumentará.</p>
         <button onclick="startGame()">¡Jugar!</button>
     </div>
     <p id="scoreDisplay" style="display: none;">Puntaje: <span id="score">0</span></p>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="500" height="400"></canvas>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const instructions = document.getElementById("instructions");
         const scoreDisplay = document.getElementById("scoreDisplay");let score = 0;
-    let basketX = 350;
-    let basketSpeed = 3;
-    let ballX = 400, ballY = 550, ballSpeed = 0;
+    let basketX = 200;
+    let basketSpeed = 2;
+    let ballX = 250, ballY = 350, ballSpeedX = 0, ballSpeedY = 0;
     let shooting = false;
+    let aiming = false;
+    let startX, startY;
     
     function drawBasket() {
         ctx.fillStyle = "orange";
-        ctx.fillRect(basketX, 100, 100, 20);
+        ctx.fillRect(basketX, 80, 120, 20);
         ctx.fillStyle = "brown";
-        ctx.fillRect(basketX + 40, 120, 20, 10);
+        ctx.fillRect(basketX + 40, 100, 40, 10);
     }
     
     function drawBall() {
         ctx.fillStyle = "red";
         ctx.beginPath();
-        ctx.arc(ballX, ballY, 15, 0, Math.PI * 2);
+        ctx.arc(ballX, ballY, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
@@ -86,19 +88,23 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         basketX += basketSpeed;
-        if (basketX <= 0 || basketX >= 700) basketSpeed *= -1;
+        if (basketX <= 0 || basketX >= 380) basketSpeed *= -1;
         
         if (shooting) {
-            ballY -= ballSpeed;
-            if (ballY <= 120 && ballX > basketX && ballX < basketX + 100) {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+            ballSpeedY += 0.5; 
+            if (ballY >= 350) {
+                ballY = 350;
+                shooting = false;
+            }
+            if (ballY <= 100 && ballX > basketX && ballX < basketX + 120) {
                 score++;
                 document.getElementById("score").innerText = score;
-                ballY = 550;
+                ballX = 250;
+                ballY = 350;
                 shooting = false;
-                basketSpeed += basketSpeed > 0 ? 0.5 : -0.5;
-            } else if (ballY < 0) {
-                ballY = 550;
-                shooting = false;
+                basketSpeed += basketSpeed > 0 ? 0.2 : -0.2;
             }
         }
         
@@ -114,17 +120,43 @@
         update();
     }
     
-    document.addEventListener("keydown", (event) => {
-        if (event.code === "Space" && !shooting) {
-            shooting = true;
-            ballSpeed = 10;
+    canvas.addEventListener("mousedown", (event) => {
+        if (!shooting) {
+            aiming = true;
+            startX = event.offsetX;
+            startY = event.offsetY;
         }
     });
     
-    document.addEventListener("click", () => {
-        if (!shooting) {
+    canvas.addEventListener("mouseup", (event) => {
+        if (aiming) {
+            aiming = false;
+            let endX = event.offsetX;
+            let endY = event.offsetY;
+            ballSpeedX = (startX - endX) / 10;
+            ballSpeedY = (startY - endY) / 10;
             shooting = true;
-            ballSpeed = 10;
+        }
+    });
+    
+    canvas.addEventListener("touchstart", (event) => {
+        if (!shooting) {
+            aiming = true;
+            let touch = event.touches[0];
+            startX = touch.clientX - canvas.offsetLeft;
+            startY = touch.clientY - canvas.offsetTop;
+        }
+    });
+    
+    canvas.addEventListener("touchend", (event) => {
+        if (aiming) {
+            aiming = false;
+            let touch = event.changedTouches[0];
+            let endX = touch.clientX - canvas.offsetLeft;
+            let endY = touch.clientY - canvas.offsetTop;
+            ballSpeedX = (startX - endX) / 10;
+            ballSpeedY = (startY - endY) / 10;
+            shooting = true;
         }
     });
 </script>
