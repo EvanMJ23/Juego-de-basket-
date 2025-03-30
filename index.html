@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basket Minigame</title>
+    <style>
+        body {
+            text-align: center;
+            background: linear-gradient(to bottom, #87CEFA, #4682B4);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        h1 {
+            font-size: 36px;
+            margin-top: 20px;
+        }
+        p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        canvas {
+            background: #f0f0f0;
+            border: 5px solid white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        .instructions {
+            font-size: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background: orange;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏀 Basket Minigame 🏀</h1>
+    <div class="instructions" id="instructions">
+        <p>📜 Instrucciones:</p>
+        <p>PC: Presiona <strong>ESPACIO</strong> para lanzar la pelota.</p>
+        <p>Celular: Toca la pantalla para lanzar la pelota.</p>
+        <p>🎯 Intenta encestar y la dificultad aumentará.</p>
+        <button onclick="startGame()">¡Jugar!</button>
+    </div>
+    <p id="scoreDisplay" style="display: none;">Puntaje: <span id="score">0</span></p>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const instructions = document.getElementById("instructions");
+        const scoreDisplay = document.getElementById("scoreDisplay");let score = 0;
+    let basketX = 350;
+    let basketSpeed = 3;
+    let ballX = 400, ballY = 550, ballSpeed = 0;
+    let shooting = false;
+    
+    function drawBasket() {
+        ctx.fillStyle = "orange";
+        ctx.fillRect(basketX, 100, 100, 20);
+        ctx.fillStyle = "brown";
+        ctx.fillRect(basketX + 40, 120, 20, 10);
+    }
+    
+    function drawBall() {
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(ballX, ballY, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        basketX += basketSpeed;
+        if (basketX <= 0 || basketX >= 700) basketSpeed *= -1;
+        
+        if (shooting) {
+            ballY -= ballSpeed;
+            if (ballY <= 120 && ballX > basketX && ballX < basketX + 100) {
+                score++;
+                document.getElementById("score").innerText = score;
+                ballY = 550;
+                shooting = false;
+                basketSpeed += basketSpeed > 0 ? 0.5 : -0.5;
+            } else if (ballY < 0) {
+                ballY = 550;
+                shooting = false;
+            }
+        }
+        
+        drawBasket();
+        drawBall();
+        requestAnimationFrame(update);
+    }
+    
+    function startGame() {
+        instructions.style.display = "none";
+        canvas.style.display = "block";
+        scoreDisplay.style.display = "block";
+        update();
+    }
+    
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space" && !shooting) {
+            shooting = true;
+            ballSpeed = 10;
+        }
+    });
+    
+    document.addEventListener("click", () => {
+        if (!shooting) {
+            shooting = true;
+            ballSpeed = 10;
+        }
+    });
+</script>
+
+</body>
+</html>
